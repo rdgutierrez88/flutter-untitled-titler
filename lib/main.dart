@@ -55,14 +55,76 @@ class MyAppState extends ChangeNotifier {
   }
 }
 
-class MyHomePage extends StatelessWidget {
+class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key});
 
-  // Automatically called every time the widget's circumstances change
-  // so that the widget is always up to date
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+
+  var selectedIndex = 0;
+
   @override
   Widget build(BuildContext context) {
-    // Tracks changes to the app's current state using this watch method
+    Widget page;
+    switch (selectedIndex) {
+      case 0:
+        page = const GeneratorPage();
+        break;
+      case 1:
+        page = const Placeholder();
+        break;
+      default:
+        throw UnimplementedError('no widget for $selectedIndex');
+    }
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Scaffold(
+          body: Row(
+            children: [
+              SafeArea(
+                child: NavigationRail(
+                  extended: constraints.maxWidth >= 600,
+                  destinations: const [
+                    NavigationRailDestination(
+                      icon: Icon(Icons.home),
+                      label: Text('Home'),
+                    ),
+                    NavigationRailDestination(
+                      icon: Icon(Icons.favorite),
+                      label: Text('Favorites'),
+                    ),
+                  ],
+                  selectedIndex: selectedIndex,
+                  onDestinationSelected: (value) {
+                    setState(() {
+                      selectedIndex = value;
+                    });
+                  },
+                ),
+              ),
+              Expanded(
+                child: Container(
+                  color: Theme.of(context).colorScheme.primaryContainer,
+                  child: page,
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+    );
+  }
+}
+
+class GeneratorPage extends StatelessWidget {
+  const GeneratorPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     var appState = context.watch<MyAppState>();
     var pair = appState.current;
 
@@ -73,45 +135,32 @@ class MyHomePage extends StatelessWidget {
       icon = Icons.favorite_border;
     }
 
-    // Every build method must return a widget
-    // or (more typically) a nested tree of widgets.
-    // In this case, the top-level widget is Scaffold.
-    // You aren't going to work with Scaffold in this codelab,
-    // but it's a helpful widget
-    // and is found in the vast majority of real-world Flutter apps.
-    return Scaffold(
-      // One of the most basic layout widgets in Flutter.
-      // It takes any number of children
-      // and puts them in a column from top to bottom.
-      // By default, the column visually places its children at the top.
-      // You'll soon change this so that the column is centered.
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            BigCard(pair: pair),
-            const SizedBox(height: 10),
-            Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                ElevatedButton.icon(
-                  onPressed: () {
-                    appState.toggleFavorite();
-                  },
-                  icon: Icon(icon),
-                  label: const Text('Like'),
-                ),
-                const SizedBox(width: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    appState.getNext();
-                  },
-                  child: const Text('Next'),
-                ),
-              ],
-            ),
-          ],
-        ),
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          BigCard(pair: pair),
+          const SizedBox(height: 10),
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () {
+                  appState.toggleFavorite();
+                },
+                icon: Icon(icon),
+                label: const Text('Like'),
+              ),
+              const SizedBox(width: 10),
+              ElevatedButton(
+                onPressed: () {
+                  appState.getNext();
+                },
+                child: const Text('Next'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
